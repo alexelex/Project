@@ -4,6 +4,7 @@ from math import pi
 from skimage.transform import resize
 from skimage.color import rgb2gray
 
+
 def Histogram(G, angle, cell_num, cell_size, binCount):
 	histogram = np.zeros((cell_num, cell_num, binCount))
 	cur_bin = np.zeros(binCount)
