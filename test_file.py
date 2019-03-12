@@ -39,23 +39,7 @@ def grade(results_list):
 
     accuracy_str = result[13:]
     accuracy = float(accuracy_str)
-
-    if accuracy >= 0.93:
-        mark = 10
-    elif accuracy >= 0.90:
-        mark = 8
-    elif accuracy >= 0.85:
-        mark = 6
-    elif accuracy >= 0.80:
-        mark = 4
-    elif accuracy >= 0.75:
-        mark = 2
-    elif accuracy > 0:
-        mark = 1
-    else:
-        mark = 0
-
-    return accuracy_str, mark
+    return accuracy_str
 
 
 def run_single_test(data_dir, output_dir):
@@ -106,57 +90,48 @@ def run_single_test(data_dir, output_dir):
 
 
 if __name__ == '__main__':
-    if environ.get('CHECKER'):
-        # Script is running in testing system, run on single input
-        if len(argv) != 3:
-            print('Usage: %s data_dir output_dir' % argv[0])
-            exit(0)
+    if len(argv) != 2:
+        print('Usage: %s tests_dir' % argv[0])
+        exit(0)
 
-        run_single_test(argv[1], argv[2])
-    else:
-        # Script is running locally, run on dir with tests
-        if len(argv) != 2:
-            print('Usage: %s tests_dir' % argv[0])
-            exit(0)
+    from glob import glob
+    from re import sub
+    from time import time
+    from traceback import format_exc
+    from os import makedirs
 
-        from glob import glob
-        from re import sub
-        from time import time
-        from traceback import format_exc
-        from os import makedirs
+    tests_dir = argv[1]
 
-        tests_dir = argv[1]
+    results = []
+    for input_dir in sorted(glob(join(tests_dir, '[0-9][0-9]_input'))):
+        output_dir = sub('input$', 'output', input_dir)
+        makedirs(output_dir, exist_ok=True)
+        gt_dir = sub('input$', 'gt', input_dir)
 
-        results = []
-        for input_dir in sorted(glob(join(tests_dir, '[0-9][0-9]_input'))):
-            output_dir = sub('input$', 'output', input_dir)
-            makedirs(output_dir, exist_ok=True)
-            gt_dir = sub('input$', 'gt', input_dir)
-
+        try:
+            start = time()
+            run_single_test(input_dir, output_dir)
+            end = time()
+            running_time = end - start
+        except:
+            result = 'Runtime error'
+            traceback = format_exc()
+        else:
             try:
-                start = time()
-                run_single_test(input_dir, output_dir)
-                end = time()
-                running_time = end - start
+                result = check_test(output_dir, gt_dir)
             except:
-                result = 'Runtime error'
+                result = 'Checker error'
                 traceback = format_exc()
-            else:
-                try:
-                    result = check_test(output_dir, gt_dir)
-                except:
-                    result = 'Checker error'
-                    traceback = format_exc()
 
-            test_num = input_dir[-8:-6]
-            if result == 'Runtime error' or result == 'Checker error':
-                print(test_num, result, '\n', traceback)
-                results.append({'result': result})
-            else:
-                print(test_num, '%.2fs' % running_time, result)
-                results.append({
-                    'time': running_time,
-                    'result': result})
+        test_num = input_dir[-8:-6]
+        if result == 'Runtime error' or result == 'Checker error':
+            print(test_num, result, '\n', traceback)
+            results.append({'result': result})
+        else:
+            print(test_num, '%.2fs' % running_time, result)
+            results.append({
+                'time': running_time,
+                'result': result})
 
-        description, mark = grade(results)
-        print('Mark:', mark, description)
+    description = grade(results)
+    print('Result:', description)
