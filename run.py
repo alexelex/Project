@@ -343,7 +343,7 @@ def train_labels(n, file):
 
 def find_signs(name, image_format, par):
 	image = cv.imread(name+image_format)
-	if not (img is not None):
+	if not (image is not None):
 		return [], [], -1
 
 	signs, image_print = cut_signs(image)
@@ -359,7 +359,7 @@ def find_signs(name, image_format, par):
 
 
 def input_image():
-	print("Input image")
+	print("- Input image")
 	name = input()
 	new_name = join(name, '*.png')
 	format_name = ".png"
@@ -372,15 +372,15 @@ def input_image():
 
 
 def input_pars():
-	print("You can input parameters. Use one of this commands:")
+	print("- You can input parameters. Use one of this commands:")
 	str0 = "nothing"
 	str1 = "only names to csv"
 	str2 = "only image with found signs"
 	str3 = "return image with found signs and names to csv"
-	print(str0)
-	print(str1)
-	print(str2)
-	print(str3)
+	print("-- "+str0)
+	print("-- "+str1)
+	print("-- "+str2)
+	print("-- "+str3)
 	str = input()
 	if str == str0:
 		return 0
@@ -390,7 +390,7 @@ def input_pars():
 		return 2
 	elif str == str3:
 		return 3
-	print("Please try again")
+	print("----- Please try again")
 	return -1
 
 
@@ -407,25 +407,25 @@ def print_names(arr, file=0):
 
 
 def start():
-	print("Here you can input image and choose enought parameters to fing signs in image")
-	print("You can use one of this commands:")
-	print("input")
-	print("info")
-	print("exit")
+	print("- Here you can input image and choose enought parameters to fing signs in image")
+	print("- You can use one of this commands:")
+	print("-- input")
+	print("-- info")
+	print("-- exit")
 
 	str = input()
 	if (str.find("input") >= 0):
 		image_name, image_format = input_image()
 		if image_name != "":
 			return 1, image_name, image_format
-		print("Wrong image or format, try again")
+		print("----- Wrong image or format, try again")
 		return 0
 	elif (str.find("info") >= 0):
-		print("The program was made by Alexandra Latysheva, group CS AMI 172")
+		print("- The program was made by Alexandra Latysheva, group CS AMI 172")
 		return 0
 	elif (str.find("exit") >= 0):
 		return -1;
-	print("Please try again")
+	print("----- Please try again")
 	return 0
 
 
@@ -433,21 +433,21 @@ def input_program():
 	res = 1
 	while res != -1:
 		res = start()
-		if res == 1:
+		if res != 0 and res != -1:
 			par = -1
 			while par == -1:
 				par = input_pars()
 			res_img, res_list, num = find_signs(res[1], res[2], par)
 			if num == -1:
-				print("Image can't be open")
+				print("----- Image can't be open")
 				continue
-			print("found", num, "signs")
+			print("- found", num, "signs")
 			if par > 1:
 				cv.imwrite(res[1]+"_result.png", res_img)
-				print("File "+res[1]+"_result.png"+" was added in dir")
+				print("- File "+res[1]+"_result.png"+" was added in dir")
 			if par % 2 == 1:
 				print_names(res_list, 1)
-				print("File output.csv was added in dir")
+				print("- File output.csv was added in dir")
 			print_names(res_list)
 
 
