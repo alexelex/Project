@@ -120,7 +120,7 @@ def contour_img(cnt, image):
 def remove_same(arr, percent=0.95):
 	change = True
 	while (change):
-		if (len(arr) <= 1):
+		if len(arr) <= 1:
 			return arr
 		change = False
 		for i in range(1, len(arr)):
