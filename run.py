@@ -243,7 +243,6 @@ def clear_image(image, gauss=7, colors=[(255, 0, 0), (0, 0, 255), (0, 255, 0)], 
 						return False, []
 
 	mask = np.zeros(image.shape[:2], np.uint8)
-	white = np.full(image.shape, 255, dtype=np.uint8)
 
 	for i in range(image.shape[0]):
 		for j in range(image.shape[1]):
