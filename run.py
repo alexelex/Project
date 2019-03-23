@@ -1,22 +1,14 @@
 import cv2 as cv
 import numpy as np
-from os import environ
-from os.path import join
-from sys import argv
-from glob import glob
-from numpy import zeros
-from os.path import basename, join
-from skimage.io import imread
-from glob import glob
-from re import sub
-from time import time
-from traceback import format_exc
-from os import makedirs
-from sklearn.svm import LinearSVC
 from math import pi
-from skimage.transform import resize
-from skimage.color import rgb2gray
+from numpy import zeros
+from os import environ
+from os.path import basename, join
+from traceback import format_exc
 from scipy.misc import imresize
+from skimage.color import rgb2gray
+from skimage.io import imread
+from sklearn.svm import LinearSVC
 
 
 
@@ -160,13 +152,11 @@ def find_all_contours(image):
 	b_contours, image_print = find_contours_mask(mask_blue, image_print)
 	w_contours, image_print = find_contours_mask(mask_white, image_print)
 	contours = r_contours + b_contours + w_contours + c_contours
+
 	images = []
 	for elem in contours:
 		images.append(contour_img(elem, image))
-	print(len(images))
-
 	images = remove_same(images)
-	print(len(images))
 
 	return images, image_print
 
@@ -258,7 +248,7 @@ def cut_signs(image, i=0):
 	images, image_print = find_all_contours(image)
 	signs = []
 	for elem in images:
-		res, res_img = clear_image(elem)
+		res, res_img = clear_image(elem[0])
 		if (res):
 			signs.append(res_img)
 	return signs, image_print
@@ -308,7 +298,6 @@ def Block(histogram, block_size, block_num, binCount, eps):
 
 def extract_hog(image):
 	size = (64, 64)
-#	image = resize(rgb2gray(image), size, anti_aliasing=False)
 	image = imresize(rgb2gray(image), size)
 	gradient_x, gradient_y = np.gradient(image, 0.5)
 	g_module = np.sqrt(np.square(gradient_x) + np.square(gradient_y))
@@ -341,15 +330,16 @@ def train_labels(n, file):
 
 def find_signs(name, image_format, par):
 	image = cv.imread(name+image_format)
-	if not (image is not None):
+	if type(image) != np.ndarray:
 		return [], [], -1
 
 	signs, image_print = cut_signs(image)
 	num = len(signs)
 
 	f = open('train.txt', 'r')
-	i = f[0].split(' ')
-	y = fit_and_classify(train_features(i, f), train_labels(i, f), signs)
+	strs = f.readlines()
+	i = int((strs[0].strip()).split(' ')[0])
+	y = fit_and_classify(train_features(i, strs), train_labels(i, strs), signs)
 
 	f.close()
 	return image_print, y, num
@@ -357,24 +347,27 @@ def find_signs(name, image_format, par):
 
 
 def input_image():
-	print("- Input image")
+	print("- Введите название файла-изображения")
 	name = input()
-	new_name = join(name, '*.png')
+	new_name = name.split('.png')[0]
 	format_name = ".png"
 	if name == new_name:
 		format_name = ".jpg"
-		new_name = join(name, '*.jpg')
+		new_name = name.split('.jpg')[0]
+	if name == new_name:
+		format_name = ".jpeg"
+		new_name = name.split('.jpeg')[0]
 	if new_name == name:
 		return "", ""
 	return new_name, format_name
 
 
 def input_pars():
-	print("- You can input parameters. Use one of this commands:")
-	str0 = "nothing"
-	str1 = "only names to csv"
-	str2 = "only image with found signs"
-	str3 = "return image with found signs and names to csv"
+	print("- Введите параметры для поиска знаков. Вы можете выбрать одну из следующих команд:")
+	str0 = "только названия"
+	str1 = "названия в .csv"
+	str2 = "изображение с выделением найденных знаков"
+	str3 = "изображение с выделением найденных знаков и названия в .csv"
 	print("-- "+str0)
 	print("-- "+str1)
 	print("-- "+str2)
@@ -388,7 +381,7 @@ def input_pars():
 		return 2
 	elif str == str3:
 		return 3
-	print("----- Please try again")
+	print("----- Пожалуйста, попробуйте снова")
 	return -1
 
 
@@ -405,25 +398,28 @@ def print_names(arr, file=0):
 
 
 def start():
-	print("- Here you can input image and choose enought parameters to fing signs in image")
-	print("- You can use one of this commands:")
-	print("-- input")
-	print("-- info")
-	print("-- exit")
+	print()
+	print("- Вы можете ввести изображение и выбать параметры для распознавания знаков")
+	print("- Выберите одну из следующих команд:")
+	print("-- ввод")
+	print("-- справка")
+	print("-- выход")
 
 	str = input()
-	if (str.find("input") >= 0):
+	if (str.find("ввод") >= 0):
 		image_name, image_format = input_image()
 		if image_name != "":
 			return 1, image_name, image_format
-		print("----- Wrong image or format, try again")
+		print("----- Не является изображением или вводится недоступный формат. Пожалуйста, введите изображение в формате .jpg, .jpeg или .png")
 		return 0
-	elif (str.find("info") >= 0):
-		print("- The program was made by Alexandra Latysheva, group CS AMI 172")
+	elif (str.find("справка") >= 0):
+		print("- Программа разработана студенткой ВШЭ ФКН БПМИ172 Латышевой Александрой")
+		print("  ментор: Красавина Алина")
+		print("  Для отправления отчета об ошибках пишите на alatysheva@edu.hse.ru")
 		return 0
-	elif (str.find("exit") >= 0):
+	elif (str.find("выход") >= 0):
 		return -1;
-	print("----- Please try again")
+	print("----- Пожалуйста, попробуйте снова")
 	return 0
 
 
@@ -437,16 +433,16 @@ def input_program():
 				par = input_pars()
 			res_img, res_list, num = find_signs(res[1], res[2], par)
 			if num == -1:
-				print("----- Image can't be open")
+				print("----- Изображение недоступно на чтение")
 				continue
-			print("- found", num, "signs")
+			print("- найдено", num, "знаков")
 			if par > 1:
 				cv.imwrite(res[1]+"_result.png", res_img)
-				print("- File "+res[1]+"_result.png"+" was added in dir")
+				print("- В директорию добавлен файл "+res[1]+"_result.png")
 			if par % 2 == 1:
 				print_names(res_list, 1)
-				print("- File output.csv was added in dir")
+				print("- Файл output.csv добавлен в директорию")
 			print_names(res_list)
 
 
-input_program()			
+input_program()
