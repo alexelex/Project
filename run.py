@@ -114,7 +114,6 @@ def contour_img(cnt, image):
 		miny = max(0, int(miny - (maxy - miny) / 3))
 		maxy = min(image.shape[1], int(maxy + (maxy - miny) / 3))
 	res = image[minx:maxx, miny:maxy, :]
-	print(minx, maxx, miny, maxy)
 	return res, ((minx, maxx, miny, maxy))
 
 
