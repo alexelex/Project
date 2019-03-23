@@ -3,7 +3,7 @@ from sklearn.svm import LinearSVC
 from math import pi
 from skimage.transform import resize
 from skimage.color import rgb2gray
-
+from scipy.misc import imresize
 
 def Histogram(G, angle, cell_num, cell_size, binCount):
 	histogram = np.zeros((cell_num, cell_num, binCount))
@@ -38,7 +38,8 @@ def Block(histogram, block_size, block_num, binCount, eps):
 
 def extract_hog(image):
 	size = (64, 64)
-	image = resize(rgb2gray(image), size)
+#	image = resize(rgb2gray(image), size, anti_aliasing=False)
+	image = imresize(rgb2gray(image), size)
 	gradient_x, gradient_y = np.gradient(image, 0.5)
 	g_module = np.sqrt(np.square(gradient_x) + np.square(gradient_y))
 	angle = np.absolute(np.arctan2(gradient_y, gradient_x))
